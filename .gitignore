@@ -1,0 +1,8 @@
+.env
+*.log
+BACKUP/
+doc/
+build/
+excel/
+__pycache__/
+venv/
