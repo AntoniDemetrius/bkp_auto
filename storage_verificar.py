@@ -268,6 +268,27 @@ def main(excel_path=None, send_email=True, stop_event=None, progress_callback=No
     if stop_event and stop_event.is_set():
         logging.info("Verificação interrompida pelo usuário.")
         return False
+    
+    # Adicionar depuração para verificar STORAGE_BASE
+    logging.info(f"Verificando caminho remoto: {STORAGE_BASE}")
+    try:
+        if os.path.exists(STORAGE_BASE):
+            logging.info("Caminho remoto acessível.")
+            dir_contents = os.listdir(STORAGE_BASE)
+            logging.info(f"Conteúdo do diretório {STORAGE_BASE}: {dir_contents}")
+        else:
+            logging.error(f"Caminho remoto {STORAGE_BASE} não existe ou não está acessível.")
+            # Tentar listar o diretório pai para depuração
+            parent_path = os.path.dirname(STORAGE_BASE) 
+            if os.path.exists(parent_path):
+                logging.info(f"Conteúdo do diretório pai {parent_path}: {os.listdir(parent_path)}")
+            else:
+                logging.error(f"Diretório pai {parent_path} também não acessível.")
+            raise Exception(f"Storage remoto {STORAGE_BASE} não acessível.")
+    except Exception as e:
+        logging.error(f"Erro ao acessar {STORAGE_BASE}: {e}", exc_info=True)
+        return False
+
     SEMANA_ATUAL = datetime.now().isocalendar()[1]
     MES_ATUAL = datetime.now().month
     ANO_ATUAL = datetime.now().year
@@ -399,7 +420,7 @@ def main(excel_path=None, send_email=True, stop_event=None, progress_callback=No
             logging.info("Envio de e-mail desativado pelo usuário.")
             return True
     except Exception as e:
-        logging.error(f"Erro geral: {e}")
+        logging.error(f"Erro geral: {e}", exc_info=True)
         return False
     finally:
         if "wb" in locals() and wb is not None:
